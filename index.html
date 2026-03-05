@@ -1577,12 +1577,38 @@ function renderCustomers(filter = '') {
         <div class="customer-value">${fmtMoney(c.total_value || 0)}</div>
         <div class="customer-jobs">${c.job_count || 0} total jobs</div>
         <button class="btn btn-ghost btn-sm" onclick="openEditCustomer('${c.id}')" style="margin-top:6px">✏️ Edit</button>
+        <button class="btn btn-ghost btn-sm" onclick="sharePortal('${c.id}')" style="margin-top:4px">🔗 Portal</button>
       </div>
     </div>`;
   }).join('');
 }
 
 function filterCustomers(val) { renderCustomers(val); }
+
+async function sharePortal(customerId) {
+  const c = allCustomers.find(x => x.id === customerId);
+  if (!c) return;
+
+  // Generate token if not exists
+  let token = c.portal_token;
+  if (!token) {
+    token = Math.random().toString(36).substring(2) + Math.random().toString(36).substring(2);
+    const { error } = await sb.from('customers').update({ portal_token: token }).eq('id', customerId);
+    if (error) { showToast('Error generating portal link', true); return; }
+    c.portal_token = token;
+  }
+
+  const portalUrl = `https://grarose.com/portal.html?id=${token}`;
+
+  // Copy to clipboard
+  try {
+    await navigator.clipboard.writeText(portalUrl);
+    showToast('Portal link copied to clipboard! 🔗');
+  } catch(e) {
+    // Fallback — show in prompt
+    prompt('Copy this portal link to send to your customer:', portalUrl);
+  }
+}
 
 function openEditCustomer(id) {
   const c = allCustomers.find(x => x.id === id);
