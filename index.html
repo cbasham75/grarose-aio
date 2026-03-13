@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Grarose — Built for the Trades</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 
 <!-- Supabase SDK -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -19,12 +19,12 @@
     --steel: #1a1f2e;
     --steel-mid: #252b3b;
     --steel-light: #2e3650;
-    --amber: #f59e0b;
-    --amber-hot: #fbbf24;
-    --amber-dim: #92400e;
+    --amber: #22C55E;
+    --amber-hot: #4ade80;
+    --amber-dim: #14532d;
     --white: #f8f9fa;
-    --muted: #8892a4;
-    --green: #10b981;
+    --muted: #A8A29E;
+    --green: #22C55E;
     --red: #ef4444;
     --blue: #3b82f6;
     --border: rgba(255,255,255,0.07);
@@ -57,7 +57,7 @@
     position: absolute;
     inset: 0;
     background:
-      radial-gradient(ellipse at 20% 50%, rgba(245,158,11,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse at 20% 50%, rgba(34,197,94,0.08) 0%, transparent 60%),
       radial-gradient(ellipse at 80% 20%, rgba(59,130,246,0.05) 0%, transparent 50%),
       var(--steel);
   }
@@ -84,7 +84,7 @@
   }
 
   .auth-logo-mark {
-    font-family: 'Bebas Neue';
+    font-family: 'Barlow Condensed';
     font-size: 52px;
     letter-spacing: 4px;
     color: var(--amber);
@@ -176,7 +176,7 @@
     margin-top: 4px;
   }
 
-  .auth-btn:hover { background: var(--amber-hot); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(245,158,11,0.3); }
+  .auth-btn:hover { background: var(--amber-hot); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(34,197,94,0.3); }
   .auth-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
   .auth-error {
@@ -242,7 +242,7 @@
   }
 
   .logo { padding: 24px 20px; border-bottom: 1px solid var(--border); }
-  .logo-mark { font-family: 'Bebas Neue'; font-size: 28px; letter-spacing: 2px; color: var(--amber); line-height: 1; }
+  .logo-mark { font-family: 'Barlow Condensed'; font-size: 28px; letter-spacing: 2px; color: var(--amber); line-height: 1; }
   .logo-sub { font-size: 10px; color: var(--muted); letter-spacing: 3px; text-transform: uppercase; margin-top: 2px; }
 
   .nav { flex: 1; padding: 16px 0; }
@@ -261,7 +261,7 @@
   }
 
   .nav-item:hover { color: var(--white); background: rgba(255,255,255,0.04); }
-  .nav-item.active { color: var(--amber); border-left-color: var(--amber); background: rgba(245,158,11,0.08); }
+  .nav-item.active { color: var(--amber); border-left-color: var(--amber); background: rgba(34,197,94,0.08); }
   .nav-icon { font-size: 18px; width: 20px; text-align: center; }
 
   .nav-badge {
@@ -287,7 +287,7 @@
     background: var(--amber-dim);
     border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    font-family: 'Bebas Neue'; font-size: 16px; color: var(--amber);
+    font-family: 'Barlow Condensed'; font-size: 16px; color: var(--amber);
     flex-shrink: 0;
   }
 
@@ -304,7 +304,7 @@
   @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
 
   .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px; }
-  .page-title { font-family: 'Bebas Neue'; font-size: 42px; letter-spacing: 2px; line-height: 1; }
+  .page-title { font-family: 'Barlow Condensed'; font-size: 42px; letter-spacing: 2px; line-height: 1; }
   .page-sub { font-size: 14px; color: var(--muted); margin-top: 4px; }
 
   .btn {
@@ -315,7 +315,7 @@
   }
 
   .btn-primary { background: var(--amber); color: var(--steel); }
-  .btn-primary:hover { background: var(--amber-hot); transform: translateY(-1px); box-shadow: 0 4px 20px rgba(245,158,11,0.3); }
+  .btn-primary:hover { background: var(--amber-hot); transform: translateY(-1px); box-shadow: 0 4px 20px rgba(34,197,94,0.3); }
   .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
   .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
   .btn-ghost:hover { color: var(--white); border-color: rgba(255,255,255,0.2); }
@@ -336,7 +336,7 @@
   .stat-card.red::before { background: var(--red); }
 
   .stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: var(--muted); font-weight: 600; }
-  .stat-value { font-family: 'Bebas Neue'; font-size: 38px; letter-spacing: 1px; line-height: 1.1; margin-top: 4px; }
+  .stat-value { font-family: 'Barlow Condensed'; font-size: 38px; letter-spacing: 1px; line-height: 1.1; margin-top: 4px; }
   .stat-delta { font-size: 12px; color: var(--green); margin-top: 4px; }
   .stat-delta.down { color: var(--red); }
 
@@ -350,7 +350,7 @@
   .table tr:hover td { background: rgba(255,255,255,0.02); }
 
   .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; font-family: 'DM Mono'; }
-  .badge-pending { background: rgba(245,158,11,0.15); color: var(--amber); }
+  .badge-pending { background: rgba(34,197,94,0.15); color: var(--amber); }
   .badge-paid { background: rgba(16,185,129,0.15); color: var(--green); }
   .badge-overdue { background: rgba(239,68,68,0.15); color: var(--red); }
   .badge-scheduled { background: rgba(59,130,246,0.15); color: var(--blue); }
@@ -362,7 +362,7 @@
   .modal-overlay.open { display: flex; }
   .modal { background: var(--steel-mid); border: 1px solid var(--border); border-radius: 16px; padding: 32px; width: 560px; max-width: 95vw; max-height: 90vh; overflow-y: auto; animation: modalIn 0.2s ease; }
   @keyframes modalIn { from { opacity:0; transform:scale(0.95) translateY(10px); } to { opacity:1; transform:scale(1) translateY(0); } }
-  .modal-title { font-family: 'Bebas Neue'; font-size: 28px; letter-spacing: 1px; margin-bottom: 24px; }
+  .modal-title { font-family: 'Barlow Condensed'; font-size: 28px; letter-spacing: 1px; margin-bottom: 24px; }
 
   /* FORM */
   .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
@@ -424,7 +424,7 @@
   .add-line-btn { background: none; border: 1px dashed var(--border); color: var(--muted); border-radius: 8px; padding: 8px; width: 100%; cursor: pointer; font-size: 13px; font-family: 'DM Sans'; transition: all 0.15s; margin-bottom: 12px; }
   .add-line-btn:hover { border-color: var(--amber); color: var(--amber); }
 
-  .quote-total { display: flex; justify-content: flex-end; align-items: center; gap: 16px; padding: 16px 0; border-top: 1px solid var(--border); font-size: 22px; font-family: 'Bebas Neue'; letter-spacing: 1px; color: var(--amber); }
+  .quote-total { display: flex; justify-content: flex-end; align-items: center; gap: 16px; padding: 16px 0; border-top: 1px solid var(--border); font-size: 22px; font-family: 'Barlow Condensed'; letter-spacing: 1px; color: var(--amber); }
 
   /* AUTOCOMPLETE */
   .ac-wrapper { position: relative; }
@@ -487,7 +487,7 @@
   .invoice-preview { background: #fff; color: #111; border-radius: 10px; padding: 32px; }
   .invoice-header { display: flex; justify-content: space-between; margin-bottom: 32px; }
   .invoice-company { font-weight: 800; font-size: 22px; color: #111; }
-  .invoice-label { font-size: 28px; font-weight: 900; color: #f59e0b; letter-spacing: 2px; }
+  .invoice-label { font-size: 28px; font-weight: 900; color: #22C55E; letter-spacing: 2px; }
   .invoice-to { margin-bottom: 24px; }
   .invoice-to-label { font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #888; font-weight: 700; margin-bottom: 4px; }
   .invoice-to-name { font-size: 16px; font-weight: 700; color: #111; }
@@ -513,8 +513,23 @@
   <div class="auth-grid-lines"></div>
   <div class="auth-box">
     <div class="auth-logo">
-      <div class="auth-logo-mark">Grarose</div>
-      <div class="auth-logo-sub">Built for the Trades</div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:4px">
+        <!-- Diamond Icon -->
+        <svg width="52" height="52" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="13" y="13" width="26" height="26" rx="3" transform="rotate(45 26 26)" fill="none" stroke="#22C55E" stroke-width="2.5"/>
+          <text x="18" y="31" font-family="Barlow Condensed, sans-serif" font-weight="700" font-size="18" fill="#A8A29E">G</text>
+          <text x="27.5" y="31" font-family="Barlow Condensed, sans-serif" font-weight="700" font-size="18" fill="#22C55E">R</text>
+        </svg>
+        <!-- Wordmark SVG -->
+        <div>
+          <svg height="44" viewBox="0 0 260 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <text y="42" font-family="Barlow Condensed, sans-serif" font-weight="700" font-size="50" letter-spacing="1">
+              <tspan fill="#A8A29E">GRA</tspan><tspan fill="#22C55E">ROSE</tspan>
+            </text>
+          </svg>
+          <div class="auth-logo-sub">Built for the Trades</div>
+        </div>
+      </div>
     </div>
     <div class="auth-card">
       <div class="auth-tabs">
@@ -593,8 +608,21 @@
 
   <nav class="sidebar">
     <div class="logo">
-      <div class="logo-mark">Grarose</div>
-      <div class="logo-sub">Field Management</div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <svg width="32" height="32" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="13" y="13" width="26" height="26" rx="3" transform="rotate(45 26 26)" fill="none" stroke="#22C55E" stroke-width="2.5"/>
+          <text x="18" y="31" font-family="Barlow Condensed, sans-serif" font-weight="700" font-size="18" fill="#A8A29E">G</text>
+          <text x="27.5" y="31" font-family="Barlow Condensed, sans-serif" font-weight="700" font-size="18" fill="#22C55E">R</text>
+        </svg>
+        <div>
+          <svg height="22" viewBox="0 0 260 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <text y="42" font-family="Barlow Condensed, sans-serif" font-weight="700" font-size="50" letter-spacing="1">
+              <tspan fill="#A8A29E">GRA</tspan><tspan fill="#22C55E">ROSE</tspan>
+            </text>
+          </svg>
+          <div class="logo-sub">Field Management</div>
+        </div>
+      </div>
     </div>
     <div class="nav">
       <div class="nav-item active" onclick="showPage('dashboard', this)">
@@ -808,7 +836,7 @@
 
       <!-- Account Info -->
       <div class="card" style="margin-bottom:20px">
-        <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:1px;margin-bottom:20px;color:var(--amber)">Account Info</div>
+        <div style="font-family:'Barlow Condensed';font-size:20px;letter-spacing:1px;margin-bottom:20px;color:var(--amber)">Account Info</div>
         <div class="form-grid">
           <div class="form-group">
             <label>Your Name</label>
@@ -839,7 +867,7 @@
 
       <!-- Business Profile -->
       <div class="card" style="margin-bottom:20px">
-        <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:1px;margin-bottom:20px;color:var(--amber)">Business Profile</div>
+        <div style="font-family:'Barlow Condensed';font-size:20px;letter-spacing:1px;margin-bottom:20px;color:var(--amber)">Business Profile</div>
         <div class="form-grid">
           <div class="form-group">
             <label>Business Name</label>
@@ -866,7 +894,7 @@
 
       <!-- Notifications -->
       <div class="card" style="margin-bottom:20px">
-        <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:1px;margin-bottom:20px;color:var(--amber)">Notifications</div>
+        <div style="font-family:'Barlow Condensed';font-size:20px;letter-spacing:1px;margin-bottom:20px;color:var(--amber)">Notifications</div>
         <div style="display:flex;flex-direction:column;gap:16px">
           <label style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;text-transform:none;letter-spacing:0;font-size:15px;font-weight:400;color:var(--white)">
             <div>
@@ -952,7 +980,7 @@
       <div id="q-tax-line" style="display:none;font-size:14px;color:var(--muted)">
         Tax: <span id="q-tax-amount" style="font-family:'DM Mono';color:var(--white)">$0.00</span>
       </div>
-      <div style="display:flex;align-items:center;gap:16px;font-family:'Bebas Neue';font-size:28px;letter-spacing:1px;color:var(--amber)">
+      <div style="display:flex;align-items:center;gap:16px;font-family:'Barlow Condensed';font-size:28px;letter-spacing:1px;color:var(--amber)">
         <span style="font-size:14px;color:var(--muted);font-family:'DM Sans';font-weight:500;letter-spacing:0">TOTAL</span>
         <span id="quote-grand-total">$0.00</span>
       </div>
@@ -985,7 +1013,7 @@
         <div id="eq-selected-customer" style="display:none;margin-top:8px;background:var(--steel-light);border-radius:8px;padding:10px 14px;font-size:13px">
           <span id="eq-selected-customer-info" style="color:var(--muted)"></span>
         </div>
-        <div id="eq-customer-warning" style="display:none;margin-top:8px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);border-radius:8px;padding:10px 14px;font-size:13px;align-items:center;gap:10px">
+        <div id="eq-customer-warning" style="display:none;margin-top:8px;background:rgba(34,197,94,0.08);border:1px solid rgba(245,158,11,0.25);border-radius:8px;padding:10px 14px;font-size:13px;align-items:center;gap:10px">
           <span style="font-size:16px">⚠️</span>
           <span style="flex:1;color:var(--muted)"><strong style="color:var(--amber)" class="eq-missing-name"></strong> isn't in your customer list yet.</span>
           <button class="btn btn-primary btn-sm eq-create-btn" type="button">+ Create Customer</button>
@@ -1027,7 +1055,7 @@
       <div id="eq-tax-line" style="display:none;font-size:14px;color:var(--muted)">
         Tax: <span id="eq-tax-amount" style="font-family:'DM Mono';color:var(--white)">$0.00</span>
       </div>
-      <div style="display:flex;align-items:center;gap:16px;font-family:'Bebas Neue';font-size:28px;letter-spacing:1px;color:var(--amber)">
+      <div style="display:flex;align-items:center;gap:16px;font-family:'Barlow Condensed';font-size:28px;letter-spacing:1px;color:var(--amber)">
         <span style="font-size:14px;color:var(--muted);font-family:'DM Sans';font-weight:500;letter-spacing:0">TOTAL</span>
         <span id="eq-grand-total">$0.00</span>
       </div>
@@ -1124,7 +1152,7 @@
         </div>
       </div>
       <div class="form-group span2" id="inv-total-display" style="display:none">
-        <div style="display:flex;justify-content:flex-end;align-items:center;gap:12px;font-family:'Bebas Neue';font-size:24px;color:var(--amber)">
+        <div style="display:flex;justify-content:flex-end;align-items:center;gap:12px;font-family:'Barlow Condensed';font-size:24px;color:var(--amber)">
           <span style="font-size:13px;font-family:'DM Sans';color:var(--muted);font-weight:500">TOTAL</span>
           <span id="inv-grand-total">$0.00</span>
         </div>
@@ -2238,7 +2266,7 @@ function openEditInvoice(id) {
         <span id="ei-tax-display" style="display:none;font-size:13px;color:var(--muted);margin-left:8px">Tax: <span id="ei-tax-amount" style="font-family:'DM Mono';color:var(--white)">$0.00</span></span>
       </div>
       <div id="ei-total-display" style="display:none;margin-top:10px">
-        <div style="display:flex;justify-content:flex-end;align-items:center;gap:12px;font-family:'Bebas Neue';font-size:24px;color:var(--amber)">
+        <div style="display:flex;justify-content:flex-end;align-items:center;gap:12px;font-family:'Barlow Condensed';font-size:24px;color:var(--amber)">
           <span style="font-size:13px;font-family:'DM Sans';color:var(--muted);font-weight:500">TOTAL WITH TAX</span>
           <span id="ei-grand-total">$0.00</span>
         </div>
@@ -2329,7 +2357,7 @@ function openSendOptions(phone, email, message, onSent) {
   overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);z-index:2000;display:flex;align-items:center;justify-content:center';
   overlay.innerHTML = `
     <div style="background:var(--steel-mid);border:1px solid var(--border);border-radius:16px;padding:32px;width:460px;max-width:95vw;animation:modalIn 0.2s ease">
-      <div style="font-family:'Bebas Neue';font-size:28px;letter-spacing:1px;margin-bottom:8px">Send to Customer 📱</div>
+      <div style="font-family:'Barlow Condensed';font-size:28px;letter-spacing:1px;margin-bottom:8px">Send to Customer 📱</div>
       <div style="font-size:13px;color:var(--muted);margin-bottom:24px">Choose how to send — your Messages or Mail app will open with everything pre-filled.</div>
 
       <div style="background:var(--steel-light);border-radius:10px;padding:14px 16px;font-size:13px;color:var(--muted);margin-bottom:24px;max-height:140px;overflow-y:auto;line-height:1.6;white-space:pre-wrap">${message}</div>
@@ -2430,11 +2458,11 @@ async function sendRealEmail(toEmail, message) {
         body { font-family: -apple-system, sans-serif; background: #f5f5f5; margin: 0; padding: 20px; }
         .container { max-width: 560px; margin: 0 auto; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
         .header { background: #1a1f2e; padding: 28px 32px; }
-        .logo { font-size: 22px; font-weight: 900; color: #f59e0b; letter-spacing: 2px; }
+        .logo { font-size: 22px; font-weight: 900; color: #22C55E; letter-spacing: 2px; }
         .biz { font-size: 13px; color: #8892a4; margin-top: 4px; }
         .body { padding: 32px; }
         .greeting { font-size: 16px; color: #111; margin-bottom: 20px; }
-        .msg { background: #f8f9fa; border-left: 4px solid #f59e0b; border-radius: 0 8px 8px 0; padding: 16px 20px; font-size: 15px; color: #333; line-height: 1.7; white-space: pre-wrap; }
+        .msg { background: #f8f9fa; border-left: 4px solid #22C55E; border-radius: 0 8px 8px 0; padding: 16px 20px; font-size: 15px; color: #333; line-height: 1.7; white-space: pre-wrap; }
         .reply { font-size: 13px; color: #666; margin-top: 20px; }
         .footer { padding: 20px 32px; border-top: 1px solid #eee; font-size: 12px; color: #999; text-align: center; }
       </style></head><body>
@@ -3062,18 +3090,18 @@ function buildPrintDoc(title, number, customerName, bizName, bizPhone, bizAddres
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color:#111; background:#fff; padding:40px; }
-  .header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:40px; padding-bottom:24px; border-bottom:3px solid #f59e0b; }
-  .brand { font-size:28px; font-weight:900; letter-spacing:3px; color:#f59e0b; }
+  .header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:40px; padding-bottom:24px; border-bottom:3px solid #22C55E; }
+  .brand { font-size:28px; font-weight:900; letter-spacing:3px; color:#22C55E; }
   .biz-info { font-size:13px; color:#555; margin-top:4px; line-height:1.6; }
   .doc-info { text-align:right; }
   .doc-title { font-size:22px; font-weight:800; color:#1a1f2e; letter-spacing:1px; }
-  .doc-number { font-size:14px; color:#f59e0b; font-weight:700; margin-top:4px; }
+  .doc-number { font-size:14px; color:#22C55E; font-weight:700; margin-top:4px; }
   .doc-date { font-size:13px; color:#555; margin-top:4px; }
   .to-section { margin-bottom:32px; }
   .to-label { font-size:11px; text-transform:uppercase; letter-spacing:2px; color:#888; margin-bottom:6px; }
   .to-name { font-size:18px; font-weight:700; }
   table { width:100%; border-collapse:collapse; margin-bottom:24px; }
-  th { background:#1a1f2e; color:#f59e0b; padding:10px 14px; text-align:left; font-size:12px; letter-spacing:1px; text-transform:uppercase; }
+  th { background:#1a1f2e; color:#22C55E; padding:10px 14px; text-align:left; font-size:12px; letter-spacing:1px; text-transform:uppercase; }
   td { padding:10px 14px; border-bottom:1px solid #eee; font-size:14px; }
   tr:last-child td { border-bottom:none; }
   .totals { margin-left:auto; width:280px; }
@@ -3308,6 +3336,33 @@ function hl(text, q) { if(!q) return text; const i=text.toLowerCase().indexOf(q)
 // START
 // ============================================================
 init();
+</script>
+
+<script>
+// Fix SVG wordmark clip paths after fonts load
+window.addEventListener('load', () => {
+  ['auth-wordsvg'].forEach(svgId => {
+    const svg = document.getElementById(svgId);
+    if (!svg) return;
+    const ns = 'http://www.w3.org/2000/svg';
+    const tmp = document.createElementNS(ns, 'text');
+    tmp.setAttribute('font-family', 'Barlow Condensed, sans-serif');
+    tmp.setAttribute('font-weight', '700');
+    tmp.setAttribute('font-size', '50');
+    tmp.setAttribute('letter-spacing', '2');
+    tmp.setAttribute('visibility', 'hidden');
+    tmp.textContent = 'GRA';
+    svg.appendChild(tmp);
+    const graWidth = tmp.getComputedTextLength();
+    svg.removeChild(tmp);
+    if (graWidth > 0) {
+      const graRect = svg.querySelector('[id$="-gra"] rect') || svg.querySelectorAll('clipPath rect')[0];
+      const roseRect = svg.querySelector('[id$="-rose"] rect') || svg.querySelectorAll('clipPath rect')[1];
+      if (graRect) graRect.setAttribute('width', graWidth);
+      if (roseRect) { roseRect.setAttribute('x', graWidth); roseRect.setAttribute('width', 300 - graWidth); }
+    }
+  });
+});
 </script>
 </body>
 </html>
