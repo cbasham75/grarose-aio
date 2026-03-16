@@ -8,6 +8,7 @@
 
 <!-- Supabase SDK -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
 <style>
   /* ===================== PASTE YOUR KEYS =====================
@@ -22,6 +23,7 @@
     --amber: #22C55E;
     --amber-hot: #4ade80;
     --amber-dim: #14532d;
+    --orange: #f97316;
     --white: #f8f9fa;
     --muted: #A8A29E;
     --green: #22C55E;
@@ -334,6 +336,7 @@
   .stat-card.green::before { background: var(--green); }
   .stat-card.blue::before { background: var(--blue); }
   .stat-card.red::before { background: var(--red); }
+  .stat-card.orange::before { background: var(--orange); }
 
   .stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: var(--muted); font-weight: 600; }
   .stat-value { font-family: 'Barlow Condensed'; font-size: 38px; letter-spacing: 1px; line-height: 1.1; margin-top: 4px; }
@@ -676,8 +679,25 @@
         <button class="btn btn-primary" onclick="openModal('new-quote-modal')">+ New Quote</button>
       </div>
 
+      <!-- Period toggle -->
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <button id="dash-btn-month" onclick="setDashPeriod('month')" style="font-size:11px;padding:3px 10px;border-radius:5px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.12);color:#fff;cursor:pointer;font-family:'DM Sans'">Month</button>
+        <select id="dash-month-picker" onchange="renderDashboard()" style="font-size:11px;background:var(--steel-mid);border:1px solid rgba(255,255,255,0.12);border-radius:5px;color:var(--muted);font-family:'DM Sans';cursor:pointer;outline:none;padding:2px 6px"></select>
+        <button id="dash-btn-ytd" onclick="setDashPeriod('ytd')" style="font-size:11px;padding:3px 10px;border-radius:5px;border:1px solid rgba(255,255,255,0.08);background:transparent;color:var(--muted);cursor:pointer;font-family:'DM Sans'">Year to Date</button>
+      </div>
+
       <div class="stats-row">
-        <div class="stat-card">
+        <div class="stat-card blue">
+          <div class="stat-label">Quotes Pending</div>
+          <div class="stat-value" id="stat-quotes">$0</div>
+          <div class="stat-delta" id="stat-quotes-label">0 awaiting approval</div>
+        </div>
+        <div class="stat-card red">
+          <div class="stat-label">Outstanding Invoices</div>
+          <div class="stat-value" id="stat-outstanding">$0</div>
+          <div class="stat-delta down" id="stat-overdue-label">0 overdue</div>
+        </div>
+        <div class="stat-card orange">
           <div class="stat-label">This Month</div>
           <div class="stat-value" id="stat-month">$0</div>
           <div class="stat-delta">Total invoiced</div>
@@ -687,15 +707,22 @@
           <div class="stat-value" id="stat-collected">$0</div>
           <div class="stat-delta">Paid invoices</div>
         </div>
-        <div class="stat-card red">
-          <div class="stat-label">Outstanding</div>
-          <div class="stat-value" id="stat-outstanding">$0</div>
-          <div class="stat-delta down" id="stat-overdue-label">0 overdue</div>
+      </div>
+
+
+      <!-- Charts Row -->
+      <div class="two-col" style="margin-bottom:24px">
+        <div class="card">
+          <div class="card-title">Revenue &mdash; Last 6 Months</div>
+          <div style="position:relative;height:220px">
+            <canvas id="chart-revenue"></canvas>
+          </div>
         </div>
-        <div class="stat-card blue">
-          <div class="stat-label">Quotes Pending</div>
-          <div class="stat-value" id="stat-quotes">$0</div>
-          <div class="stat-delta" id="stat-quotes-label">0 awaiting approval</div>
+        <div class="card">
+          <div class="card-title">Quotes vs Invoices &mdash; Last 6 Months</div>
+          <div style="position:relative;height:220px">
+            <canvas id="chart-pipeline"></canvas>
+          </div>
         </div>
       </div>
 
@@ -2578,16 +2605,53 @@ async function confirmDeleteInvoice(id) {
 }
 
 // ---- DASHBOARD ----
+function setDashPeriod(mode) {
+  window._dashPeriod = mode;
+  renderDashboard();
+}
+
 function renderDashboard() {
   const today = new Date().toISOString().split('T')[0];
-  const monthStart = today.slice(0,7) + '-01';
+  const yearStart = today.slice(0,4) + '-01-01';
 
-  const monthInvoices = allInvoices.filter(i => i.invoice_date >= monthStart);
-  const monthTotal = monthInvoices.reduce((s,i) => s + i.amount, 0);
-  const collected  = monthInvoices.filter(i => i.status === 'paid').reduce((s,i) => s + i.amount, 0);
-  const outstanding = allInvoices.filter(i => i.status !== 'paid').reduce((s,i) => s + i.amount, 0);
-  const overdueCount = allInvoices.filter(i => i.status !== 'paid' && i.due_date && i.due_date < today).length;
-  const pendingQuotes = allQuotes.filter(q => q.status === 'sent');
+  // Initialize picker with last 12 months if empty
+  const picker = document.getElementById('dash-month-picker');
+  if (picker && picker.tagName === 'SELECT' && picker.options.length === 0) {
+    const now = new Date();
+    for (let i = 0; i < 12; i++) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const val = d.toISOString().slice(0,7);
+      const label = d.toLocaleString('default', { month: 'long', year: 'numeric' });
+      const opt = document.createElement('option');
+      opt.value = val;
+      opt.textContent = label;
+      picker.appendChild(opt);
+    }
+  }
+
+  // Determine period bounds
+  const mode = window._dashPeriod || 'month';
+  let periodStart, periodEnd;
+  if (mode === 'ytd') {
+    periodStart = yearStart;
+    periodEnd = today;
+  } else {
+    const pickedMonth = picker ? picker.value : today.slice(0,7);
+    periodStart = pickedMonth + '-01';
+    const d = new Date(pickedMonth + '-01');
+    d.setMonth(d.getMonth() + 1);
+    periodEnd = d.toISOString().slice(0,10);
+  }
+
+  // Filter invoices and quotes to period
+  const periodInvoices = allInvoices.filter(i => i.invoice_date >= periodStart && i.invoice_date < periodEnd);
+  const periodQuotes = allQuotes.filter(q => q.quote_date >= periodStart && q.quote_date < periodEnd);
+
+  const monthTotal = periodInvoices.reduce((s,i) => s + i.amount, 0);
+  const collected  = periodInvoices.filter(i => i.status === 'paid').reduce((s,i) => s + i.amount, 0);
+  const outstanding = periodInvoices.filter(i => i.status !== 'paid').reduce((s,i) => s + i.amount, 0);
+  const overdueCount = periodInvoices.filter(i => i.status !== 'paid' && i.due_date && i.due_date < today).length;
+  const pendingQuotes = periodQuotes.filter(q => q.status === 'sent');
   const pendingQTotal = pendingQuotes.reduce((s,q) => s + q.total, 0);
 
   document.getElementById('stat-month').textContent = fmtMoney(monthTotal);
@@ -2596,6 +2660,23 @@ function renderDashboard() {
   document.getElementById('stat-overdue-label').textContent = `${overdueCount} overdue`;
   document.getElementById('stat-quotes').textContent = fmtMoney(pendingQTotal);
   document.getElementById('stat-quotes-label').textContent = `${pendingQuotes.length} awaiting approval`;
+
+  // Update toggle button styles and picker
+  const btnMonth = document.getElementById('dash-btn-month');
+  const btnYtd = document.getElementById('dash-btn-ytd');
+  if (btnMonth && btnYtd) {
+    const ytdActive = mode === 'ytd';
+    btnMonth.style.cssText = `font-size:11px;padding:3px 10px;border-radius:5px;cursor:${ytdActive?'default':'pointer'};font-family:'DM Sans';border:1px solid ${ytdActive?'rgba(255,255,255,0.06)':'rgba(255,255,255,0.2)'};background:${ytdActive?'transparent':'rgba(255,255,255,0.12)'};color:${ytdActive?'rgba(255,255,255,0.25)':'#fff'};transition:all 0.2s`;
+    btnYtd.style.cssText  = `font-size:11px;padding:3px 10px;border-radius:5px;cursor:pointer;font-family:'DM Sans';border:1px solid ${ytdActive?'rgba(255,255,255,0.2)':'rgba(255,255,255,0.08)'};background:${ytdActive?'rgba(255,255,255,0.12)':'transparent'};color:${ytdActive?'#fff':'var(--muted)'};transition:all 0.2s`;
+    if (picker) {
+      picker.style.opacity = ytdActive ? '0.25' : '1';
+      picker.style.pointerEvents = ytdActive ? 'none' : 'auto';
+    }
+  }
+
+  // Update "This Month" label dynamically
+  const monthLabel = document.querySelector('#page-dashboard .stat-card.orange .stat-label');
+  if (monthLabel) monthLabel.textContent = mode === 'ytd' ? 'YTD Invoiced' : 'This Period';
 
   // Recent quotes
   const dq = document.getElementById('dash-quotes');
@@ -2632,6 +2713,105 @@ function renderDashboard() {
       </div>
       <div style="font-size:12px;color:var(--muted)">${a.note}</div>
     </div>`).join('');
+  }
+
+  renderCharts();
+}
+
+let _chartRevenue = null;
+let _chartPipeline = null;
+
+function renderCharts() {
+  // Build last 6 months labels
+  const months = [];
+  const now = new Date();
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    months.push({ label: d.toLocaleString('default', { month: 'short' }), key: d.toISOString().slice(0,7) });
+  }
+
+  // Revenue per month (paid invoices)
+  const revenueData = months.map(m =>
+    allInvoices.filter(i => i.status === 'paid' && (i.invoice_date || '').startsWith(m.key))
+      .reduce((s, i) => s + i.amount, 0)
+  );
+
+  // Quotes count per month
+  const quotesData = months.map(m =>
+    allQuotes.filter(q => (q.quote_date || '').startsWith(m.key)).length
+  );
+
+  // Invoices count per month
+  const invoicesData = months.map(m =>
+    allInvoices.filter(i => (i.invoice_date || '').startsWith(m.key)).length
+  );
+
+  const labels = months.map(m => m.label);
+  const chartDefaults = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { labels: { color: '#A8A29E', font: { family: 'DM Sans', size: 12 } } } },
+    scales: {
+      x: { ticks: { color: '#A8A29E', font: { family: 'DM Sans' } }, grid: { color: 'rgba(255,255,255,0.05)' } },
+      y: { ticks: { color: '#A8A29E', font: { family: 'DM Sans' } }, grid: { color: 'rgba(255,255,255,0.05)' }, beginAtZero: true }
+    }
+  };
+
+  // Revenue chart
+  const rCtx = document.getElementById('chart-revenue');
+  if (rCtx) {
+    if (_chartRevenue) _chartRevenue.destroy();
+    _chartRevenue = new Chart(rCtx, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Revenue ($)',
+          data: revenueData,
+          backgroundColor: 'rgba(34,197,94,0.25)',
+          borderColor: '#22C55E',
+          borderWidth: 2,
+          borderRadius: 6,
+        }]
+      },
+      options: {
+        ...chartDefaults,
+        plugins: { ...chartDefaults.plugins, tooltip: { callbacks: { label: ctx => ' $' + ctx.raw.toLocaleString() } } }
+      }
+    });
+  }
+
+  // Pipeline chart
+  const pCtx = document.getElementById('chart-pipeline');
+  if (pCtx) {
+    if (_chartPipeline) _chartPipeline.destroy();
+    _chartPipeline = new Chart(pCtx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: 'Quotes',
+            data: quotesData,
+            borderColor: '#A8A29E',
+            backgroundColor: 'rgba(168,162,158,0.1)',
+            tension: 0.4,
+            pointRadius: 4,
+            fill: true,
+          },
+          {
+            label: 'Invoices',
+            data: invoicesData,
+            borderColor: '#22C55E',
+            backgroundColor: 'rgba(34,197,94,0.1)',
+            tension: 0.4,
+            pointRadius: 4,
+            fill: true,
+          }
+        ]
+      },
+      options: chartDefaults
+    });
   }
 }
 
