@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Approve Your Quote — Grarose</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700&family=DM+Sans:wght@400;500;600;700&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --green: #22C55E;
+    --stone: #A8A29E;
+    --dark: #1a1f2e;
+    --card: #ffffff;
+    --border: #e5e7eb;
+    --muted: #6b7280;
+    --red: #ef4444;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #f3f4f6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 16px 64px;
+  }
+
+  .header {
+    background: var(--dark);
+    width: 100%;
+    padding: 20px 32px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+  }
+
+  .logo {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 26px;
+    letter-spacing: 2px;
+    line-height: 1;
+  }
+  .logo span:first-child { color: var(--green); }
+  .logo span:last-child { color: var(--stone); }
+
+  .tagline {
+    font-size: 12px;
+    color: var(--stone);
+    border-left: 1px solid rgba(255,255,255,0.15);
+    padding-left: 12px;
+    margin-left: 4px;
+  }
+
+  .container {
+    margin-top: 88px;
+    width: 100%;
+    max-width: 580px;
+  }
+
+  .card {
+    background: var(--card);
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+
+  .card-header {
+    background: var(--dark);
+    padding: 24px 28px;
+    color: white;
+  }
+
+  .card-header .label {
+    font-size: 11px;
+    color: var(--stone);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .card-header .quote-num {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 32px;
+    letter-spacing: 1px;
+    color: white;
+  }
+
+  .card-header .biz-name {
+    font-size: 13px;
+    color: var(--stone);
+    margin-top: 4px;
+  }
+
+  .card-body { padding: 28px; }
+
+  .meta-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    gap: 12px;
+  }
+
+  .meta-item { flex: 1; }
+  .meta-item .meta-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .meta-item .meta-value { font-size: 15px; font-weight: 600; color: #111; }
+
+  .desc {
+    background: #f9fafb;
+    border-left: 3px solid var(--green);
+    border-radius: 0 8px 8px 0;
+    padding: 12px 16px;
+    font-size: 14px;
+    color: #374151;
+    margin-bottom: 20px;
+    line-height: 1.6;
+  }
+
+  table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+  thead th { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); padding: 8px 0; border-bottom: 1px solid var(--border); text-align: left; }
+  thead th:last-child { text-align: right; }
+  tbody td { padding: 10px 0; font-size: 14px; color: #374151; border-bottom: 1px solid #f3f4f6; }
+  tbody td:last-child { text-align: right; font-family: 'DM Mono', monospace; font-size: 13px; }
+
+  .totals { border-top: 2px solid var(--border); padding-top: 12px; }
+  .total-row { display: flex; justify-content: space-between; font-size: 14px; color: var(--muted); padding: 4px 0; }
+  .total-row.grand { font-size: 20px; font-weight: 700; color: #111; margin-top: 8px; }
+  .total-row.grand span:last-child { color: var(--green); font-family: 'DM Mono', monospace; }
+
+  .sign-card .card-body { padding: 28px; }
+
+  .sign-label { font-size: 14px; color: #374151; margin-bottom: 16px; line-height: 1.6; }
+  .sign-label strong { color: #111; }
+
+  .sign-input-wrap { margin-bottom: 20px; }
+  .sign-input-wrap label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+  .sign-input {
+    width: 100%;
+    padding: 14px 16px;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    font-size: 16px;
+    font-family: 'DM Sans', sans-serif;
+    color: #111;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .sign-input:focus { border-color: var(--green); }
+  .sign-input.signed { font-family: 'DM Mono', monospace; background: #f0fdf4; border-color: var(--green); }
+
+  .approve-btn {
+    width: 100%;
+    padding: 16px;
+    background: var(--green);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 700;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+  }
+  .approve-btn:hover { background: #16a34a; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(34,197,94,0.3); }
+  .approve-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  .legal {
+    font-size: 11px;
+    color: var(--muted);
+    text-align: center;
+    margin-top: 12px;
+    line-height: 1.6;
+  }
+
+  /* States */
+  #state-loading, #state-error, #state-approved, #state-form { display: none; }
+
+  .spinner {
+    width: 40px; height: 40px;
+    border: 3px solid #e5e7eb;
+    border-top-color: var(--green);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 60px auto;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .success-icon {
+    width: 72px; height: 72px;
+    background: #dcfce7;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    margin: 0 auto 20px;
+  }
+
+  .success-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    padding: 48px 32px;
+    text-align: center;
+    animation: fadeUp 0.4s ease;
+  }
+
+  .success-card h2 { font-size: 24px; color: #111; margin-bottom: 8px; }
+  .success-card p { font-size: 14px; color: var(--muted); line-height: 1.6; }
+  .success-meta { margin-top: 24px; background: #f9fafb; border-radius: 10px; padding: 16px; text-align: left; }
+  .success-meta-row { display: flex; justify-content: space-between; font-size: 13px; padding: 4px 0; }
+  .success-meta-row span:first-child { color: var(--muted); }
+  .success-meta-row span:last-child { font-weight: 600; color: #111; }
+
+  .error-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    padding: 48px 32px;
+    text-align: center;
+  }
+  .error-icon { font-size: 48px; margin-bottom: 16px; }
+  .error-card h2 { font-size: 20px; color: #111; margin-bottom: 8px; }
+  .error-card p { font-size: 14px; color: var(--muted); }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo"><span>GRA</span><span>ROSE</span></div>
+  <div class="tagline">Built for the Trades</div>
+</div>
+
+<div class="container">
+
+  <!-- Loading -->
+  <div id="state-loading">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Error -->
+  <div id="state-error">
+    <div class="error-card">
+      <div class="error-icon">⚠️</div>
+      <h2>Link Not Found</h2>
+      <p id="error-msg">This approval link is invalid or has already been used.</p>
+    </div>
+  </div>
+
+  <!-- Already Approved -->
+  <div id="state-approved">
+    <div class="success-card">
+      <div class="success-icon">✅</div>
+      <h2>Already Approved</h2>
+      <p>This quote has already been approved. No further action is needed.</p>
+      <div class="success-meta" id="approved-meta"></div>
+    </div>
+  </div>
+
+  <!-- Form -->
+  <div id="state-form">
+    <div class="card" id="quote-card">
+      <div class="card-header">
+        <div class="label">Quote for Review</div>
+        <div class="quote-num" id="q-number">—</div>
+        <div class="biz-name" id="q-biz">—</div>
+      </div>
+      <div class="card-body">
+        <div class="meta-row">
+          <div class="meta-item">
+            <div class="meta-label">Customer</div>
+            <div class="meta-value" id="q-customer">—</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Date</div>
+            <div class="meta-value" id="q-date">—</div>
+          </div>
+        </div>
+        <div class="desc" id="q-desc">—</div>
+        <table>
+          <thead><tr><th>Item</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead>
+          <tbody id="q-items"></tbody>
+        </table>
+        <div class="totals">
+          <div class="total-row" id="q-tax-row" style="display:none">
+            <span>Subtotal</span><span id="q-subtotal">—</span>
+          </div>
+          <div class="total-row" id="q-tax-line" style="display:none">
+            <span id="q-tax-label">Tax</span><span id="q-tax-amt">—</span>
+          </div>
+          <div class="total-row grand">
+            <span>Total</span><span id="q-total">—</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card sign-card">
+      <div class="card-body">
+        <p class="sign-label">By typing your full name and clicking <strong>Approve Quote</strong>, you confirm that you have reviewed the above quote and authorize the work to proceed as described.</p>
+        <div class="sign-input-wrap">
+          <label>Your Full Name (Electronic Signature)</label>
+          <input type="text" id="sig-input" class="sign-input" placeholder="Type your full name to sign" autocomplete="name">
+        </div>
+        <button class="approve-btn" id="approve-btn" onclick="submitApproval()" disabled>Approve Quote</button>
+        <p class="legal">This constitutes a legally binding electronic signature. Your name, IP address, and timestamp will be recorded.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const SUPABASE_URL = 'https://zgkbmfqrlevfsrawohww.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_HkmTSpTIwWqVYoq5Y0ZdLA_OfoSZcYP';
+
+  const headers = { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' };
+
+  function show(id) {
+    ['state-loading','state-error','state-approved','state-form'].forEach(s => {
+      document.getElementById(s).style.display = s === id ? 'block' : 'none';
+    });
+  }
+
+  function fmtMoney(n) {
+    return '$' + Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function fmtDate(d) {
+    if (!d) return '—';
+    return new Date(d + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  }
+
+  let quoteData = null;
+
+  async function init() {
+    show('state-loading');
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+
+    if (!token) { show('state-error'); document.getElementById('error-msg').textContent = 'No approval token found in this link.'; return; }
+
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/quotes?approval_token=eq.${token}&select=*`, { headers });
+    const rows = await res.json();
+
+    if (!rows.length) { show('state-error'); return; }
+
+    const q = rows[0];
+    quoteData = q;
+
+    if (q.status === 'approved' || q.status === 'invoiced') {
+      show('state-approved');
+      document.getElementById('approved-meta').innerHTML = `
+        <div class="success-meta-row"><span>Quote</span><span>${q.quote_number || q.id.slice(0,8)}</span></div>
+        <div class="success-meta-row"><span>Approved by</span><span>${q.approved_by || '—'}</span></div>
+        <div class="success-meta-row"><span>Approved on</span><span>${q.approved_at ? new Date(q.approved_at).toLocaleString() : '—'}</span></div>
+      `;
+      return;
+    }
+
+    // Populate form
+    document.getElementById('q-number').textContent = q.quote_number || `Quote #${q.id.slice(0,8)}`;
+    document.getElementById('q-customer').textContent = q.customer_name || '—';
+    document.getElementById('q-date').textContent = fmtDate(q.quote_date);
+    document.getElementById('q-desc').textContent = q.description || '—';
+
+    // Business name from user profile
+    const profRes = await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${q.user_id}&select=business_name,name`, { headers });
+    const profs = await profRes.json();
+    const biz = profs[0]?.business_name || profs[0]?.name || 'Grarose';
+    document.getElementById('q-biz').textContent = biz;
+
+    // Line items
+    let items = [];
+    try { items = JSON.parse(q.line_items || '[]'); } catch(e) {}
+    const tbody = document.getElementById('q-items');
+    const subtotal = items.reduce((s, i) => s + (i.qty * i.price), 0);
+    tbody.innerHTML = items.map(i => `<tr>
+      <td>${i.name || i.desc || '—'}</td>
+      <td>${i.qty}</td>
+      <td>${fmtMoney(i.price)}</td>
+      <td>${fmtMoney(i.qty * i.price)}</td>
+    </tr>`).join('');
+
+    const taxRate = parseFloat(q.tax_rate) || 0;
+    if (taxRate > 0) {
+      const taxAmt = subtotal * (taxRate / 100);
+      document.getElementById('q-subtotal').textContent = fmtMoney(subtotal);
+      document.getElementById('q-tax-label').textContent = `Tax (${taxRate}%)`;
+      document.getElementById('q-tax-amt').textContent = fmtMoney(taxAmt);
+      document.getElementById('q-tax-row').style.display = 'flex';
+      document.getElementById('q-tax-line').style.display = 'flex';
+    }
+
+    document.getElementById('q-total').textContent = fmtMoney(q.total);
+
+    // Signature input enables button
+    const sigInput = document.getElementById('sig-input');
+    const approveBtn = document.getElementById('approve-btn');
+    sigInput.addEventListener('input', () => {
+      const valid = sigInput.value.trim().split(' ').length >= 2;
+      approveBtn.disabled = !valid;
+      if (valid) sigInput.classList.add('signed');
+      else sigInput.classList.remove('signed');
+    });
+
+    show('state-form');
+  }
+
+  async function submitApproval() {
+    const sig = document.getElementById('sig-input').value.trim();
+    if (sig.split(' ').length < 2) { alert('Please enter your full name (first and last).'); return; }
+
+    const btn = document.getElementById('approve-btn');
+    btn.disabled = true;
+    btn.textContent = 'Saving...';
+
+    // Get IP
+    let ip = 'unknown';
+    try { const r = await fetch('https://api.ipify.org?format=json'); const d = await r.json(); ip = d.ip; } catch(e) {}
+
+    const now = new Date().toISOString();
+
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/quotes?id=eq.${quoteData.id}`, {
+      method: 'PATCH',
+      headers: { ...headers, Prefer: 'return=minimal' },
+      body: JSON.stringify({
+        status: 'approved',
+        approved_by: sig,
+        approved_at: now,
+        approved_ip: ip
+      })
+    });
+
+    if (res.ok) {
+      show('state-approved');
+      document.getElementById('approved-meta').innerHTML = `
+        <div class="success-meta-row"><span>Quote</span><span>${quoteData.quote_number || quoteData.id.slice(0,8)}</span></div>
+        <div class="success-meta-row"><span>Approved by</span><span>${sig}</span></div>
+        <div class="success-meta-row"><span>Approved on</span><span>${new Date(now).toLocaleString()}</span></div>
+        <div class="success-meta-row"><span>IP Address</span><span>${ip}</span></div>
+      `;
+      // Swap to success
+      const successCard = document.querySelector('.success-card');
+      if (successCard) {
+        successCard.querySelector('h2').textContent = 'Quote Approved!';
+        successCard.querySelector('p').textContent = "You're all set. We'll be in touch shortly to get started.";
+      }
+    } else {
+      btn.disabled = false;
+      btn.textContent = 'Approve Quote';
+      alert('Something went wrong. Please try again or contact us directly.');
+    }
+  }
+
+  init();
+</script>
+</body>
+</html>

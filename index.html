@@ -1720,18 +1720,20 @@ async function saveQuote(status) {
 
   // Generate quote number: Q-001, Q-002 etc.
   const quoteNumber = `Q-${String(allQuotes.length + 1).padStart(3, '0')}`;
+  const approvalToken = status === 'sent' ? generateApprovalToken() : '';
 
   const { error } = await sb.from('quotes').insert({
-    user_id:       currentUser.id,
-    customer_id:   custId,
-    customer_name: custName,
-    description:   v('q-job-desc'),
-    line_items:    JSON.stringify(items),
+    user_id:        currentUser.id,
+    customer_id:    custId,
+    customer_name:  custName,
+    description:    v('q-job-desc'),
+    line_items:     JSON.stringify(items),
     total,
-    tax_rate:      taxEnabled ? taxRate : 0,
+    tax_rate:       taxEnabled ? taxRate : 0,
     status,
-    quote_number:  quoteNumber,
-    quote_date:    v('q-date') || new Date().toISOString().split('T')[0]
+    quote_number:   quoteNumber,
+    approval_token: approvalToken,
+    quote_date:     v('q-date') || new Date().toISOString().split('T')[0]
   });
 
   if (error) { showToast(`Error: ${error.message}`, true); return; }
@@ -1744,7 +1746,8 @@ async function saveQuote(status) {
   const cust = allCustomers.find(c => c.id === custId) || { phone: '', email: '' };
   const bizName = userProfile?.business_name || userProfile?.name || '';
   const itemsText = items.map(i => `  • ${i.name}: ${fmtMoney(i.qty * i.price)}`).join('\n');
-  const msg = `Hi ${custName}, here is your quote from ${bizName}:\n\n${jobDesc || 'Job'}\n${itemsText}\n\nTotal: ${fmtMoney(total)}\n\nReply to approve or ask questions.`;
+  const approvalLink = approvalToken ? `\n\nReview & approve your quote here:\nhttps://grarose.com/approve?token=${approvalToken}` : '';
+  const msg = `Hi ${custName}, here is your quote from ${bizName}:\n\n${jobDesc || 'Job'}\n${itemsText}\n\nTotal: ${fmtMoney(total)}${approvalLink}`;
   if (status === 'sent') openSendOptions(cust.phone, cust.email, msg, async () => {});
   else showToast('Draft saved ✓');
 }
@@ -1973,15 +1976,22 @@ async function updateQuote(status) {
   const total = subtotal + taxAmt;
   const custName = allCustomers.find(c => c.id === custId)?.name || 'Unknown';
 
+  // Generate or reuse approval token
+  const existingQuote = allQuotes.find(q => q.id === id);
+  const approvalToken = status === 'sent'
+    ? (existingQuote?.approval_token || generateApprovalToken())
+    : (existingQuote?.approval_token || '');
+
   const { error } = await sb.from('quotes').update({
-    customer_id:   custId,
-    customer_name: custName,
-    description:   v('eq-job-desc'),
-    line_items:    JSON.stringify(items),
+    customer_id:    custId,
+    customer_name:  custName,
+    description:    v('eq-job-desc'),
+    line_items:     JSON.stringify(items),
     total,
-    tax_rate:      taxEnabled ? taxRate : 0,
+    tax_rate:       taxEnabled ? taxRate : 0,
     status,
-    quote_date:    v('eq-date') || new Date().toISOString().split('T')[0]
+    approval_token: approvalToken,
+    quote_date:     v('eq-date') || new Date().toISOString().split('T')[0]
   }).eq('id', id);
 
   if (error) { showToast('Error updating quote', true); return; }
@@ -1992,7 +2002,8 @@ async function updateQuote(status) {
     const cust = allCustomers.find(c => c.id === custId) || { phone: '', email: '' };
     const bizName = userProfile?.business_name || userProfile?.name || '';
     const itemsText = items.map(i => `  • ${i.name}: ${fmtMoney(i.qty * i.price)}`).join('\n');
-    const msg = `Hi ${custName}, here is your quote from ${bizName}:\n\n${v('eq-job-desc') || 'Job'}\n${itemsText}\n\nTotal: ${fmtMoney(total)}\n\nReply to approve or ask questions.`;
+    const approvalLink = approvalToken ? `\n\nReview & approve your quote here:\nhttps://grarose.com/approve?token=${approvalToken}` : '';
+    const msg = `Hi ${custName}, here is your quote from ${bizName}:\n\n${v('eq-job-desc') || 'Job'}\n${itemsText}\n\nTotal: ${fmtMoney(total)}${approvalLink}`;
     openSendOptions(cust.phone, cust.email, msg, async () => {});
   } else {
     showToast('Quote updated ✓');
@@ -2363,9 +2374,11 @@ function sendQuoteToCustomer(quoteId) {
       return items.map(i => `  • ${i.name}: ${fmtMoney(i.qty * i.price)}`).join('\n');
     } catch(e) { return ''; }
   })();
-  const msg = `Hi ${q.customer_name}, here is your quote from ${bizName}:\n\n${q.description || 'Job'}\n${itemList}\n\nTotal: ${fmtMoney(q.total)}\n\nReply to approve or ask questions.`;
+  const token = q.approval_token || generateApprovalToken();
+  const approvalLink = `\n\nReview & approve your quote here:\nhttps://grarose.com/approve?token=${token}`;
+  const msg = `Hi ${q.customer_name}, here is your quote from ${bizName}:\n\n${q.description || 'Job'}\n${itemList}\n\nTotal: ${fmtMoney(q.total)}${approvalLink}`;
   openSendOptions(cust.phone, cust.email, msg, async () => {
-    await sb.from('quotes').update({ status: 'sent' }).eq('id', quoteId);
+    await sb.from('quotes').update({ status: 'sent', approval_token: token }).eq('id', quoteId);
     await loadAllData();
   });
 }
@@ -3502,6 +3515,10 @@ function showToast(msg, isError = false) {
 // ============================================================
 // UTILITIES
 // ============================================================
+function generateApprovalToken() {
+  return crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2) + Date.now().toString(36);
+}
+
 function v(id) { return document.getElementById(id)?.value || ''; }
 function show(id) { const el = document.getElementById(id); if(el){el.style.display='';el.classList.add('visible');} }
 function hide(id) { const el = document.getElementById(id); if(el){el.classList.remove('visible');el.style.display='none';} }
