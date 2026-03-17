@@ -2031,32 +2031,30 @@ async function convertToInvoice() {
   const dueDate = due.toISOString().split('T')[0];
 
   const { error: invErr } = await sb.from('invoices').insert({
-    user_id:       currentUser.id,
-    customer_id:   custId || null,
-    customer_name: custName,
-    description:   desc,
-    amount:        total,
-    tax_rate:      taxEnabled ? taxRate : 0,
-    status:        'pending',
-    due_date:      dueDate,
-    invoice_date:  new Date().toISOString().split('T')[0]
+    user_id:        currentUser.id,
+    customer_id:    custId || null,
+    customer_name:  custName,
+    description:    desc,
+    amount:         total,
+    tax_rate:       taxEnabled ? taxRate : 0,
+    status:         'pending',
+    due_date:       dueDate,
+    invoice_number: `INV-${String(allInvoices.length + 1).padStart(3, '0')}`,
+    invoice_date:   new Date().toISOString().split('T')[0]
   });
 
   if (invErr) { showToast(`Error: ${invErr.message}`, true); return; }
 
   await sb.from('quotes').update({ status: 'invoiced' }).eq('id', id);
-
   closeModal('edit-quote-modal');
-  showToast(`Invoice created for ${custName} — ${fmtMoney(total)}${taxEnabled ? ` (incl. ${taxRate}% tax)` : ''} 💰`);
   await loadAllData();
+  showToast(`Invoice created for ${custName} — ${fmtMoney(total)}${taxEnabled ? ` (incl. ${taxRate}% tax)` : ''} 💰`);
 
-  setTimeout(() => {
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    document.querySelectorAll('.nav-item').forEach(n => {
-      if (n.textContent.includes('Invoice')) n.classList.add('active');
-    });
-    showPage('invoices', null);
-  }, 400);
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if (n.textContent.includes('Invoice')) n.classList.add('active');
+  });
+  showPage('invoices', null);
 }
 
 async function confirmDeleteQuote(id) {
