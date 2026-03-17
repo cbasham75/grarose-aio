@@ -358,6 +358,7 @@
   .badge-overdue { background: rgba(239,68,68,0.15); color: var(--red); }
   .badge-scheduled { background: rgba(59,130,246,0.15); color: var(--blue); }
   .badge-complete { background: rgba(16,185,129,0.15); color: var(--green); }
+  .badge-approved { background: rgba(34,197,94,0.15); color: var(--green); border: 1px solid rgba(34,197,94,0.4); font-weight: 700; letter-spacing: 0.5px; }
   .badge-draft { background: rgba(136,146,164,0.15); color: var(--muted); }
 
   /* MODAL */
@@ -1768,14 +1769,15 @@ function renderQuotes() {
       <th>#</th><th>Customer</th><th>Description</th><th>Amount</th><th>Date</th><th>Status</th><th>Actions</th>
     </tr></thead>
     <tbody>${allQuotes.map(q => {
-      const badgeCls = q.status === 'approved' ? 'badge-paid' : q.status === 'draft' ? 'badge-draft' : 'badge-pending';
+      const badgeCls = q.status === 'approved' ? 'badge-approved' : q.status === 'draft' ? 'badge-draft' : 'badge-pending';
+      const badgeText = q.status === 'approved' ? '✅ Approved' : q.status === 'invoiced' ? 'Invoiced' : q.status;
       return `<tr>
         <td style="font-family:'DM Mono';font-size:12px;color:var(--amber)">${q.quote_number || '—'}</td>
         <td><strong>${q.customer_name}</strong></td>
         <td>${q.description || '—'}</td>
         <td style="font-family:'DM Mono';color:var(--amber)">${fmtMoney(q.total)}</td>
         <td style="color:var(--muted);font-size:13px">${fmtDate(q.quote_date)}</td>
-        <td><span class="badge ${badgeCls}">${q.status}</span></td>
+        <td><span class="badge ${badgeCls}">${badgeText}</span></td>
         <td>
           <div style="display:flex;gap:6px;flex-wrap:wrap">
             <button class="btn btn-ghost btn-sm" onclick="openEditQuote('${q.id}')">✏️ Edit</button>
@@ -2492,6 +2494,13 @@ async function sendRealEmail(toEmail, message) {
     const bizName = userProfile?.business_name || userProfile?.name || 'Your Contractor';
     const customerName = message.split(',')[0].replace('Hi ', '').trim();
 
+    // Extract approval link if present
+    const tokenMatch = message.match(/https:\/\/grarose\.com\/approve\?token=[\w-]+/);
+    const approvalUrl = tokenMatch ? tokenMatch[0] : null;
+    const cleanMessage = approvalUrl
+      ? message.replace(/\n\nReview & approve your quote here:\nhttps:\/\/grarose\.com\/approve\?token=[\w-]+/, '').trim()
+      : message;
+
     // Build HTML email body
     const html = `
       <!DOCTYPE html><html><head><meta charset="utf-8">
@@ -2504,6 +2513,7 @@ async function sendRealEmail(toEmail, message) {
         .body { padding: 32px; }
         .greeting { font-size: 16px; color: #111; margin-bottom: 20px; }
         .msg { background: #f8f9fa; border-left: 4px solid #22C55E; border-radius: 0 8px 8px 0; padding: 16px 20px; font-size: 15px; color: #333; line-height: 1.7; white-space: pre-wrap; }
+        .approve-btn { display:block; margin: 24px auto 0; background: #22C55E; color: #fff; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-size: 16px; font-weight: 700; text-align: center; }
         .reply { font-size: 13px; color: #666; margin-top: 20px; }
         .footer { padding: 20px 32px; border-top: 1px solid #eee; font-size: 12px; color: #999; text-align: center; }
       </style></head><body>
@@ -2511,7 +2521,8 @@ async function sendRealEmail(toEmail, message) {
         <div class="header"><div class="logo">Grarose</div><div class="biz">${bizName}</div></div>
         <div class="body">
           <div class="greeting">Hi ${customerName},</div>
-          <div class="msg">${message.replace(/\n/g, '<br>')}</div>
+          <div class="msg">${cleanMessage.replace(/\n/g, '<br>')}</div>
+          ${approvalUrl ? `<a href="${approvalUrl}" class="approve-btn">✅ Review &amp; Approve Quote</a>` : ''}
           <div class="reply">Simply reply to this email with any questions.</div>
         </div>
         <div class="footer">Sent via Grarose &nbsp;·&nbsp; Built for the Trades</div>
@@ -2704,7 +2715,7 @@ function renderDashboard() {
       </div>
       <div style="text-align:right">
         <div style="font-family:'DM Mono';color:var(--amber)">${fmtMoney(q.total)}</div>
-        <span class="badge badge-${q.status === 'paid' ? 'paid' : q.status === 'draft' ? 'draft' : 'pending'}" style="font-size:10px">${q.status}</span>
+        <span class="badge badge-${q.status === 'approved' ? 'approved' : q.status === 'draft' ? 'draft' : 'pending'}" style="font-size:10px">${q.status === 'approved' ? '✅ Approved' : q.status}</span>
       </div>
     </div>`).join('');
   }
