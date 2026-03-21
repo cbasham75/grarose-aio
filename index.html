@@ -2251,8 +2251,8 @@ function renderInvoices() {
     </tr></thead>
     <tbody>${allInvoices.map(inv => {
       const isOverdue = inv.status !== 'paid' && inv.due_date && inv.due_date < today;
-      const statusBadge = inv.status === 'paid' ? 'badge-paid' : isOverdue ? 'badge-overdue' : 'badge-pending';
-      const statusLabel = inv.status === 'paid' ? 'Paid' : isOverdue ? 'Overdue' : 'Pending';
+      const statusBadge = inv.status === 'paid' ? 'badge-paid' : isOverdue ? 'badge-overdue' : inv.status === 'sent' ? 'badge-scheduled' : 'badge-pending';
+      const statusLabel = inv.status === 'paid' ? 'Paid' : isOverdue ? 'Overdue' : inv.status === 'sent' ? 'Sent' : 'Pending';
       return `<tr>
         <td style="font-family:'DM Mono';font-size:12px;color:var(--amber)">${inv.invoice_number || '—'}</td>
         <td><strong>${inv.customer_name}</strong></td>
@@ -2292,8 +2292,8 @@ function openEditInvoice(id) {
   const today = new Date().toISOString().split('T')[0];
   const isOverdue = inv.status !== 'paid' && inv.due_date && inv.due_date < today;
   const badge = document.getElementById('edit-inv-status-badge');
-  badge.textContent = inv.status === 'paid' ? 'Paid' : isOverdue ? 'Overdue' : 'Pending';
-  badge.className = `badge ${inv.status === 'paid' ? 'badge-paid' : isOverdue ? 'badge-overdue' : 'badge-pending'}`;
+  badge.textContent = inv.status === 'paid' ? 'Paid' : isOverdue ? 'Overdue' : inv.status === 'sent' ? 'Sent' : 'Pending';
+  badge.className = `badge ${inv.status === 'paid' ? 'badge-paid' : isOverdue ? 'badge-overdue' : inv.status === 'sent' ? 'badge-scheduled' : 'badge-pending'}`;
 
   // Populate and select customer
   populateCustomerDropdowns();
@@ -2392,7 +2392,7 @@ async function sendInvoiceReminder() {
   const msg = `Hi ${inv.customer_name}, your invoice for ${inv.description || 'recent work'} is ${fmtMoney(inv.amount)}${inv.due_date ? ', due ' + fmtDate(inv.due_date) : ''}. Please reply to arrange payment. — ${bizName}`;
   closeModal('edit-invoice-modal');
   openSendOptions(cust.phone, cust.email, msg, async () => {
-    await sb.from('invoices').update({ status: 'pending' }).eq('id', id);
+    await sb.from('invoices').update({ status: 'sent' }).eq('id', id);
     await loadAllData();
   });
 }
