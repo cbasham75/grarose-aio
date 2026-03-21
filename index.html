@@ -3536,8 +3536,8 @@ async function saveSettings() {
   const { error } = await sb.from('profiles').upsert({ id: currentUser.id, ...updates });
   if (error) { showToast(`Error: ${error.message}`, true); return; }
 
-  // Reload profile to ensure payment_methods and all fields are fresh in memory
-  await loadUserProfile();
+  // Update local profile directly — no need to re-fetch
+  userProfile = { ...userProfile, ...updates };
   document.getElementById('user-name-display').textContent = name;
   document.getElementById('user-biz-display').textContent = updates.business_name || '';
   const initials = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2);
