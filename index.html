@@ -2532,6 +2532,10 @@ async function sendRealEmail(toEmail, message) {
       ? message.replace(/\n\nReview & approve your quote here:\nhttps:\/\/grarose\.com\/approve\?token=[\w-]+/, '').trim()
       : message;
 
+    // Build pay now section
+    const payMethods = userProfile?.payment_methods?.filter(m => m.name && m.link) || [];
+    const paySection = payMethods.length ? `<div style="margin-top:24px;padding-top:20px;border-top:1px solid #eee"><div style="font-size:13px;font-weight:600;color:#111;margin-bottom:10px">Pay Now</div>${payMethods.map(m => { const href = m.link.startsWith('http') ? m.link : 'https://' + m.link; return '<a href="' + href + '" style="display:inline-block;margin:4px 6px 4px 0;padding:10px 20px;background:#22C55E;color:#fff;text-decoration:none;border-radius:7px;font-size:14px;font-weight:600">Pay via ' + m.name + '</a>'; }).join('')}</div>` : '';
+
     // Build HTML email body
     const html = `
       <!DOCTYPE html><html><head><meta charset="utf-8">
@@ -2555,15 +2559,7 @@ async function sendRealEmail(toEmail, message) {
           <div class="msg">${cleanMessage.replace(/\n/g, '<br>')}</div>
           ${approvalUrl ? `<a href="${approvalUrl}" class="approve-btn">✅ Review &amp; Approve Quote</a>` : ''}
           <div class="reply">Simply reply to this email with any questions.</div>
-          ${(() => {
-            const methods = userProfile?.payment_methods?.filter(m => m.name && m.link) || [];
-            if (!methods.length) return '';
-            const btns = methods.map(m => {
-              const href = m.link.startsWith('http') ? m.link : `https://${m.link}`;
-              return `<a href="${href}" style="display:inline-block;margin:4px 6px 4px 0;padding:10px 20px;background:#22C55E;color:#fff;text-decoration:none;border-radius:7px;font-size:14px;font-weight:600">Pay via ${m.name}</a>`;
-            }).join('');
-            return `<div style="margin-top:24px;padding-top:20px;border-top:1px solid #eee"><div style="font-size:13px;font-weight:600;color:#111;margin-bottom:10px">Pay Now</div>${btns}</div>`;
-          })()}
+          ${paySection}
         </div>
         <div class="footer">Sent via Grarose &nbsp;·&nbsp; Built for the Trades</div>
       </div></body></html>`;
@@ -3540,14 +3536,30 @@ async function saveSettings() {
   const { error } = await sb.from('profiles').upsert({ id: currentUser.id, ...updates });
   if (error) { showToast(`Error: ${error.message}`, true); return; }
 
-  // Update local profile
-  userProfile = { ...userProfile, ...updates };
+  // Reload profile to ensure payment_methods and all fields are fresh in memory
+  await loadUserProfile();
   document.getElementById('user-name-display').textContent = name;
   document.getElementById('user-biz-display').textContent = updates.business_name || '';
   const initials = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2);
   document.getElementById('user-avatar').textContent = initials;
 
   showToast('Settings saved ✓');
+
+  // Visual feedback on save button
+  const saveBtn = document.querySelector('#page-settings .btn-primary');
+  if (saveBtn) {
+    const original = saveBtn.textContent;
+    saveBtn.textContent = '✓ Saved!';
+    saveBtn.style.background = '#16a34a';
+    saveBtn.style.transform = 'scale(1.04)';
+    saveBtn.disabled = true;
+    setTimeout(() => {
+      saveBtn.textContent = original;
+      saveBtn.style.background = '';
+      saveBtn.style.transform = '';
+      saveBtn.disabled = false;
+    }, 2500);
+  }
 }
 
 function showChangePassword() {
