@@ -1558,6 +1558,11 @@ async function doSignup() {
 async function loadUserProfile() {
   const { data } = await sb.from('profiles').select('*').eq('id', currentUser.id).single();
   userProfile = data || { name: currentUser.email, business_name: '' };
+  // Ensure payment_methods is always an array
+  if (typeof userProfile.payment_methods === 'string') {
+    try { userProfile.payment_methods = JSON.parse(userProfile.payment_methods); } catch(e) { userProfile.payment_methods = []; }
+  }
+  if (!Array.isArray(userProfile.payment_methods)) userProfile.payment_methods = [];
   const initials = (userProfile.name || 'U').split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2);
   document.getElementById('user-avatar').textContent = initials;
   document.getElementById('user-name-display').textContent = userProfile.name || currentUser.email;
