@@ -541,6 +541,7 @@
 
   @media (max-width: 768px) {
     .mobile-topbar { display: flex; }
+    #paywall-banner, #trial-banner { left: 0 !important; }
 
     .sidebar {
       transform: translateX(-100%);
@@ -1500,6 +1501,26 @@ async function init() {
 
   sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
+  // Handle successful Stripe checkout return
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('subscribed') === 'true') {
+    // Mark subscription active — webhook will confirm but this gives instant UX
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) {
+      await sb.from('profiles').update({
+        subscription_status: 'active',
+        subscription_plan: 'pending_confirmation'
+      }).eq('id', session.user.id);
+    }
+    // Clean up URL
+    window.history.replaceState({}, '', window.location.pathname);
+    showToast('🎉 Welcome to Grarose AIO! Your subscription is active.');
+  }
+
+  if (urlParams.get('canceled') === 'true') {
+    window.history.replaceState({}, '', window.location.pathname);
+  }
+
   const { data: { session } } = await sb.auth.getSession();
   if (session) {
     currentUser = session.user;
@@ -1536,6 +1557,176 @@ function showApp() {
   setDashboardGreeting();
   loadAllData();
   startRealtimeSubscription();
+  checkSubscriptionStatus();
+}
+
+function checkSubscriptionStatus() {
+  if (!userProfile) return;
+  const status = userProfile.subscription_status || 'trial';
+  const trialEnd = userProfile.trial_ends_at ? new Date(userProfile.trial_ends_at) : null;
+  const now = new Date();
+  const isTrialActive = status === 'trial' && trialEnd && trialEnd > now;
+  const isSubscribed = status === 'active';
+
+  // Calculate days left in trial
+  if (isTrialActive) {
+    const daysLeft = Math.ceil((trialEnd - now) / 86400000);
+    if (daysLeft <= 7) {
+      showTrialBanner(daysLeft);
+    }
+    return;
+  }
+
+  if (!isSubscribed) {
+    showPaywall();
+  }
+}
+
+function showTrialBanner(daysLeft) {
+  const existing = document.getElementById('trial-banner');
+  if (existing) return;
+  const banner = document.createElement('div');
+  banner.id = 'trial-banner';
+  banner.style.cssText = 'position:fixed;bottom:0;left:220px;right:0;z-index:500;background:linear-gradient(135deg,#1a2035,#1e2d1a);border-top:1px solid rgba(34,197,94,0.3);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px';
+  banner.innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="font-size:18px">⏳</span>
+      <div>
+        <div style="font-size:14px;font-weight:700;color:#fff">${daysLeft} day${daysLeft !== 1 ? 's' : ''} left in your free trial</div>
+        <div style="font-size:12px;color:var(--muted)">Subscribe to keep full access to Grarose AIO</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;flex-shrink:0">
+      <button onclick="document.getElementById('trial-banner').remove()" style="padding:8px 16px;background:transparent;border:1px solid var(--border);border-radius:7px;color:var(--muted);font-size:13px;cursor:pointer;font-family:'DM Sans'">Dismiss</button>
+      <button onclick="showUpgradeModal()" style="padding:8px 20px;background:var(--green);border:none;border-radius:7px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans'">Upgrade Now</button>
+    </div>`;
+  document.body.appendChild(banner);
+}
+
+function showPaywall() {
+  // Disable all create/edit/delete buttons
+  document.querySelectorAll('.btn-primary, .btn-danger, .btn-success').forEach(btn => {
+    if (!btn.closest('#upgrade-modal') && !btn.id?.includes('upgrade')) {
+      btn.disabled = true;
+      btn.style.opacity = '0.4';
+      btn.title = 'Upgrade to access this feature';
+    }
+  });
+
+  // Show persistent upgrade bar
+  const existing = document.getElementById('paywall-banner');
+  if (existing) return;
+  const banner = document.createElement('div');
+  banner.id = 'paywall-banner';
+  banner.style.cssText = 'position:fixed;bottom:0;left:220px;right:0;z-index:500;background:linear-gradient(135deg,#1a1520,#1a2035);border-top:2px solid rgba(239,68,68,0.4);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px';
+  banner.innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="font-size:22px">🔒</span>
+      <div>
+        <div style="font-size:14px;font-weight:700;color:#fff">Your free trial has ended</div>
+        <div style="font-size:12px;color:var(--muted)">You're in read-only mode. Subscribe to create quotes, invoices, and more.</div>
+      </div>
+    </div>
+    <button onclick="showUpgradeModal()" style="padding:10px 24px;background:var(--green);border:none;border-radius:7px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans';flex-shrink:0">Subscribe — From $19/mo</button>`;
+  document.body.appendChild(banner);
+}
+
+function showUpgradeModal() {
+  const existing = document.getElementById('upgrade-modal');
+  if (existing) existing.remove();
+  const modal = document.createElement('div');
+  modal.id = 'upgrade-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.8);backdrop-filter:blur(6px);z-index:2000;display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.innerHTML = `
+    <div style="background:var(--steel-mid);border:1px solid var(--border);border-radius:20px;padding:40px;width:100%;max-width:520px;animation:modalIn 0.2s ease">
+      <div style="text-align:center;margin-bottom:32px">
+        <div style="font-family:'Barlow Condensed';font-size:14px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--green);margin-bottom:12px">Grarose AIO</div>
+        <div style="font-family:'Barlow Condensed';font-size:36px;font-weight:900;letter-spacing:1px;margin-bottom:8px">Choose Your Plan</div>
+        <div style="font-size:14px;color:var(--muted)">Everything you need to run your contracting business professionally.</div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px">
+        <!-- Monthly -->
+        <div onclick="selectPlan('monthly')" id="plan-monthly" style="padding:24px;background:var(--steel-light);border:2px solid var(--border);border-radius:14px;cursor:pointer;transition:all 0.2s;text-align:center">
+          <div style="font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:12px">Monthly</div>
+          <div style="font-family:'Barlow Condensed';font-size:48px;font-weight:900;color:var(--white);line-height:1">$25</div>
+          <div style="font-size:13px;color:var(--muted);margin-bottom:12px">per month</div>
+          <div style="font-size:12px;color:var(--muted)">Cancel anytime</div>
+        </div>
+        <!-- Annual -->
+        <div onclick="selectPlan('annual')" id="plan-annual" style="padding:24px;background:var(--green-dim);border:2px solid rgba(34,197,94,0.4);border-radius:14px;cursor:pointer;transition:all 0.2s;text-align:center;position:relative">
+          <div style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--green);color:#fff;font-size:10px;font-weight:700;padding:3px 12px;border-radius:100px;letter-spacing:1px;white-space:nowrap">BEST VALUE</div>
+          <div style="font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--green);margin-bottom:12px">Annual</div>
+          <div style="font-family:'Barlow Condensed';font-size:48px;font-weight:900;color:var(--white);line-height:1">$19</div>
+          <div style="font-size:13px;color:var(--muted);margin-bottom:4px">per month</div>
+          <div style="font-size:12px;color:var(--green);font-weight:600">$228 billed annually</div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:28px">
+        <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text)"><span style="color:var(--green)">✓</span> Unlimited quotes with e-signature approval</div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text)"><span style="color:var(--green)">✓</span> Invoice management with payment links</div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text)"><span style="color:var(--green)">✓</span> Customer management & price book</div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text)"><span style="color:var(--green)">✓</span> SMS & email sending</div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text)"><span style="color:var(--green)">✓</span> Automated overdue reminders</div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text)"><span style="color:var(--green)">✓</span> Real-time dashboard & reporting</div>
+      </div>
+
+      <button id="upgrade-btn" onclick="startCheckout()" style="width:100%;padding:16px;background:var(--green);border:none;border-radius:10px;color:#fff;font-size:16px;font-weight:700;cursor:pointer;font-family:'DM Sans';transition:all 0.2s;margin-bottom:12px">Subscribe — Annual $19/mo</button>
+      <div style="text-align:center">
+        <button onclick="document.getElementById('upgrade-modal').remove()" style="background:none;border:none;color:var(--muted);font-size:13px;cursor:pointer;font-family:'DM Sans'">Maybe later</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+  window._selectedPlan = 'annual';
+}
+
+function selectPlan(plan) {
+  window._selectedPlan = plan;
+  const monthly = document.getElementById('plan-monthly');
+  const annual = document.getElementById('plan-annual');
+  const btn = document.getElementById('upgrade-btn');
+  if (plan === 'monthly') {
+    monthly.style.border = '2px solid rgba(34,197,94,0.5)';
+    annual.style.border = '2px solid var(--border)';
+    btn.textContent = 'Subscribe — Monthly $25/mo';
+  } else {
+    annual.style.border = '2px solid rgba(34,197,94,0.4)';
+    monthly.style.border = '2px solid var(--border)';
+    btn.textContent = 'Subscribe — Annual $19/mo';
+  }
+}
+
+async function startCheckout() {
+  const btn = document.getElementById('upgrade-btn');
+  if (btn) { btn.textContent = 'Loading...'; btn.disabled = true; }
+
+  const priceId = window._selectedPlan === 'annual'
+    ? 'price_1THyW3COJx56gCU3dnq6ky4O'
+    : 'price_1THyUeCOJx56gCU3PocRjhUI';
+
+  try {
+    const res = await fetch('https://eoczadberom79oo.m.pipedream.net', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        priceId,
+        email: currentUser.email,
+        userId: currentUser.id,
+        plan: window._selectedPlan
+      })
+    });
+    const data = await res.json();
+    if (data.url) {
+      window.location.href = data.url;
+    } else {
+      showToast('Error starting checkout. Please try again.', true);
+      if (btn) { btn.textContent = 'Subscribe'; btn.disabled = false; }
+    }
+  } catch(err) {
+    showToast('Error: ' + err.message, true);
+    if (btn) { btn.textContent = 'Subscribe'; btn.disabled = false; }
+  }
 }
 
 function startRealtimeSubscription() {
@@ -1623,7 +1814,14 @@ async function doSignup() {
   if (error) { authError('signup', error.message); setAuthLoading('signup-btn', false); return; }
   // Insert profile row
   if (data.user) {
-    await sb.from('profiles').upsert({ id: data.user.id, name, business_name: biz });
+    const trialStart = new Date().toISOString();
+    const trialEnd = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+    await sb.from('profiles').upsert({
+      id: data.user.id, name, business_name: biz,
+      trial_started_at: trialStart,
+      trial_ends_at: trialEnd,
+      subscription_status: 'trial'
+    });
   }
   setAuthLoading('signup-btn', false);
   showToast('Account created! Welcome to Grarose 🎉');
